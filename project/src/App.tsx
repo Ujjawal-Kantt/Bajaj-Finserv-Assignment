@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Stethoscope } from 'lucide-react';
-import SearchBar from './components/SearchBar';
-import FilterPanel from './components/FilterPanel';
-import DoctorList from './components/DoctorList';
-import ActiveFilters from './components/ActiveFilters';
-import LandingPage from './components/LandingPage';
-import { FilterState } from './types/doctor';
-import useDoctorData from './hooks/useDoctorData';
-import { syncFiltersToUrl, getFiltersFromUrl } from './utils/urlUtils';
+import React, { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Stethoscope } from "lucide-react";
+import SearchBar from "./components/SearchBar";
+import FilterPanel from "./components/FilterPanel";
+import DoctorList from "./components/DoctorList";
+import ActiveFilters from "./components/ActiveFilters";
+import LandingPage from "./components/LandingPage";
+import { FilterState } from "./types/doctor";
+import useDoctorData from "./hooks/useDoctorData";
+import { syncFiltersToUrl, getFiltersFromUrl } from "./utils/urlUtils";
 
 function App() {
   const location = useLocation();
@@ -17,17 +17,24 @@ function App() {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showContent, setShowContent] = useState(false);
-  
-  // Initialize filters from URL parameters
-  const [filters, setFilters] = useState<FilterState>(getFiltersFromUrl());
-  
-  const { 
-    doctors, 
-    loading, 
-    error, 
-    specialtyList, 
-    getAutocompleteSuggestions 
-  } = useDoctorData(filters);
+
+  const [filters, setFilters] = useState<FilterState>({
+    search: "",
+    consultationType: "",
+    specialties: [],
+    sortBy: "",
+  });
+
+  const handleClearAllFilters = () => {
+    setFilters({
+      search: "",
+      consultationType: "",
+      specialties: [],
+      sortBy: "",
+    });
+  };
+  const { doctors, loading, error, specialtyList, getAutocompleteSuggestions } =
+    useDoctorData(filters);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -43,8 +50,8 @@ function App() {
       setIsMobile(window.innerWidth < 768);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Handle browser navigation
@@ -53,8 +60,8 @@ function App() {
       setFilters(getFiltersFromUrl());
     };
 
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
   // Update filters
@@ -71,17 +78,17 @@ function App() {
 
   // Remove a specific filter
   const handleRemoveFilter = (type: keyof FilterState, value?: string) => {
-    if (type === 'specialties' && value) {
+    if (type === "specialties" && value) {
       const updatedSpecialties = filters.specialties.filter(
         (specialty) => specialty !== value
       );
       handleFilterChange({ specialties: updatedSpecialties });
-    } else if (type === 'search') {
-      handleFilterChange({ search: '' });
-    } else if (type === 'consultationType') {
-      handleFilterChange({ consultationType: '' });
-    } else if (type === 'sortBy') {
-      handleFilterChange({ sortBy: '' });
+    } else if (type === "search") {
+      handleFilterChange({ search: "" });
+    } else if (type === "consultationType") {
+      handleFilterChange({ consultationType: "" });
+    } else if (type === "sortBy") {
+      handleFilterChange({ sortBy: "" });
     }
   };
 
@@ -93,7 +100,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
       <LandingPage />
-      
+
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: showContent ? 1 : 0 }}
@@ -103,7 +110,7 @@ function App() {
           <div className="container px-4 py-6 mx-auto">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div className="flex items-center mb-4 md:mb-0">
-                <motion.div 
+                <motion.div
                   className="text-2xl font-bold"
                   whileHover={{ scale: 1.05 }}
                 >
@@ -124,7 +131,7 @@ function App() {
 
         <main className="container px-4 py-6 mx-auto">
           {error ? (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="p-4 text-white bg-error rounded-md"
@@ -148,18 +155,19 @@ function App() {
 
               <div className="flex-1">
                 <div className="mb-4">
-                  <motion.h1 
+                  <motion.h1
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-600"
                   >
                     {loading
-                      ? 'Loading doctors...'
+                      ? "Loading doctors..."
                       : `${doctors.length} Doctors Available`}
                   </motion.h1>
                   <ActiveFilters
                     filters={filters}
                     onRemoveFilter={handleRemoveFilter}
+                    onClearAllFilters={handleClearAllFilters} // Pass the new function
                   />
                 </div>
                 <DoctorList doctors={doctors} loading={loading} />
